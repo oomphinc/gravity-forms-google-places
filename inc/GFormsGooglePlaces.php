@@ -135,7 +135,7 @@ class GFormsGooglePlaces {
 		foreach ( $form['fields'] as $field ) {
 			if ( $field->type === 'places-api' ) {
 				wp_enqueue_script( 'google-places', 'https://maps.googleapis.com/maps/api/js?sensor=false&amp;libraries=places', [ 'jquery' ] );
-				wp_enqueue_script( 'jquery-geocomplete', plugins_url( '/assets/jquery.geocomplete.min.js', __FILE__ ), [ 'jquery', 'google-places' ] );
+				wp_enqueue_script( 'jquery-geocomplete', PLUGINS_URL . '/assets/jquery.geocomplete.min.js', [ 'jquery', 'google-places' ] );
 				break;
 			}
 		}
