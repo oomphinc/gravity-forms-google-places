@@ -29,5 +29,5 @@ namespace OomphInc;
 
 if ( !class_exists( '\OomphInc\GFormsGooglePlaces' ) ) {
 	require_once __DIR__ . '/inc/GFormsGooglePlaces.php';
-	define( '\OomphInc\PLUGINS_URL', plugins_url( '/', __FILE__ ) );
+	define( __NAMESPACE__ . '\\PLUGINS_URL', plugins_url( '/', __FILE__ ) );
 }
