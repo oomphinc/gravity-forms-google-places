@@ -1,0 +1,7 @@
+{
+    "name": "oomphinc/gravity-forms-google-places",
+    "description": "Adds a location field type that integrates with the Google Places API.",
+    "type": "wordpress-plugin",
+    "license": "MIT",
+    "require": {}
+}
