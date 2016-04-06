@@ -3,7 +3,7 @@
 Plugin Name: Gravity Forms Google Places
 Description: Adds a location field type that integrates with the Google Places API.
 Author: Stephen Beemsterboer @ Oomph, Inc.
-Version: 1.0.1
+Version: 1.0.3
 Author URI: http://www.oomphinc.com/
 License: MIT
 	The MIT License (MIT)
@@ -25,9 +25,10 @@ License: MIT
 	THE SOFTWARE.
 */
 
-namespace OomphInc;
+namespace OomphInc\GFormsGooglePlaces;
 
-if ( !class_exists( '\OomphInc\GFormsGooglePlaces' ) ) {
-	require_once __DIR__ . '/inc/GFormsGooglePlaces.php';
+if ( !class_exists( __NAMESPACE__ . '\\Plugin' ) ) {
+	require_once __DIR__ . '/inc/Plugin.php';
 	define( __NAMESPACE__ . '\\PLUGINS_URL', plugins_url( '/', __FILE__ ) );
+	Plugin::init();
 }

@@ -3,5 +3,14 @@
     "description": "Adds a location field type that integrates with the Google Places API.",
     "type": "wordpress-plugin",
     "license": "MIT",
-    "require": {}
+    "authors": [
+        {
+            "name": "Stephen Beemsterboer",
+            "homepage": "https://github.com/balbuf",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": ">=5.4"
+    }
 }

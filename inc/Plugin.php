@@ -1,11 +1,11 @@
 <?php
 
-namespace OomphInc;
+namespace OomphInc\GFormsGooglePlaces;
 
 /**
  * Extensions for Gravity Forms
  */
-class GFormsGooglePlaces {
+class Plugin {
 
 	/**
 	 * Hook some stuffs!
@@ -79,7 +79,7 @@ class GFormsGooglePlaces {
 				Populate with Places Field
 				<?php gform_tooltip( 'geo_field' ); ?>
 				</label>
-				<input type="text" id="geo_field" onkeyup="SetFieldProperty('geoField', this.value);" />
+				<input type="text" id="geo_field" onkeyup="SetFieldProperty('geoField', this.value);">
 			</li>
 		<?php
 		}
@@ -154,4 +154,3 @@ class GFormsGooglePlaces {
 	}
 
 }
-GFormsGooglePlaces::init();
