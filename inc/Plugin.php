@@ -7,6 +7,8 @@ namespace OomphInc\GFormsGooglePlaces;
  */
 class Plugin {
 
+	const type = 'places-api';
+
 	/**
 	 * Hook some stuffs!
 	 */
@@ -32,7 +34,7 @@ class Plugin {
 			if ( $group['name'] === 'advanced_fields' ) {
 				$group['fields'][] = [
 					'class' => 'button',
-					'data-type' => 'places-api',
+					'data-type' => self::type,
 					'value' => 'Google Places',
 				];
 			}
@@ -46,9 +48,18 @@ class Plugin {
 	 * @filter gform_field_type_title
 	 */
 	static function field_title( $type ) {
-		if ( $type === 'places-api' ) {
+		if ( $type === self::type ) {
 			return 'Google Places Lookup';
 		}
+	}
+
+	/**
+	 * Determine if the given field object is a google places type.
+	 * @param  object $field field object
+	 * @return bool        is it?
+	 */
+	static function field_is_places( $field ) {
+		return $field->type === self::type || ( $field->type === 'post_custom_field' && $field->inputType === self::type );
 	}
 
 	/**
@@ -62,8 +73,11 @@ class Plugin {
 	 */
 	static function field( $input, $field, $value, $lead_id, $form_id ) {
 		$html_id = 'input_' . ( is_admin() || !$form_id ? '' : $form_id . '_' ) . $field->id;
-		if ( $field->type === 'places-api' ) {
-			return '<div class="ginput_container"><input type="text" class="medium geo-complete" name="input_' . esc_attr( $field->id ) . '" id="' . esc_attr( $html_id ) . '" value="' . esc_attr( $value ) . '" ' .  disabled( is_admin(), true, false ) . '></div>';
+		if ( self::field_is_places( $field ) ) {
+			return '<div class="ginput_container"><input type="text" class="medium geo-complete"'
+				. ' name="input_' . esc_attr( $field->id ) . '" id="' . esc_attr( $html_id ) . '" value="' . esc_attr( $value ) . '" '
+				. disabled( is_admin(), true, false ) . ' data-field-id="' . esc_attr( $field->id ) . '"'
+				. 'placeholder="' . esc_html( $field->placeholder ) . '"></div>';
 		}
 		return $input;
 	}
@@ -76,10 +90,11 @@ class Plugin {
 		?>
 			<li class="geo_field_setting field_setting">
 				<label for="geo_field">
-				Populate with Places Field
+				Populate with Google Places Address Component
 				<?php gform_tooltip( 'geo_field' ); ?>
 				</label>
-				<input type="text" id="geo_field" onkeyup="SetFieldProperty('geoField', this.value);">
+				Field ID: <input type="text" id="geo_field_id" onkeyup="SetFieldProperty('geoFieldId', this.value);" size="4">
+				Component: <input type="text" id="geo_field" onkeyup="SetFieldProperty('geoField', this.value);">
 			</li>
 		<?php
 		}
@@ -99,7 +114,7 @@ class Plugin {
 	 */
 	static function field_edit_defaults() {
 	?>
-		case 'places-api':
+		case <?php echo json_encode( self::type ); ?>:
 			field.label = 'Location';
 		break;
 	<?php
@@ -113,14 +128,20 @@ class Plugin {
 	?>
 		<script type="text/javascript">
 			//defining settings for the new custom field
-			fieldSettings['places-api'] = '.conditional_logic_field_setting, .error_message_setting, .label_setting, .label_placement_setting, .rules_setting, .admin_label_setting, .size_setting, .visibility_setting, .duplicate_setting, .placeholder_setting, .description_setting, .css_class_setting';
+			fieldSettings[<?php echo json_encode( self::type ); ?>] = '.conditional_logic_field_setting, .error_message_setting, .label_setting, .label_placement_setting, .rules_setting, .admin_label_setting, .size_setting, .visibility_setting, .duplicate_setting, .placeholder_setting, .description_setting, .css_class_setting';
 			fieldSettings['text'] += ', .geo_field_setting';
 			fieldSettings['hidden'] += ', .geo_field_setting';
 
-			//binding to the load field settings event to initialize the checkbox
-			jQuery(document).bind('gform_load_field_settings', function(event, field, form){
-				jQuery("#geo_field").val(field['geoField']);
-			});
+			(function($) {
+				//binding to the load field settings event to initialize the checkbox
+				$(document).bind('gform_load_field_settings', function(event, field, form){
+					$("#geo_field").val(field['geoField']);
+					$("#geo_field_id").val(field['geoFieldId']);
+				});
+
+				// add the places api type as an option for custom fields
+				$('#post_custom_field_type').find('optgroup[label^="Advanced"]').append('<option value="' + <?php echo json_encode( self::type ); ?> + '">Google Places</option>');
+			})(jQuery);
 		</script>
 	<?php
 	}
@@ -133,8 +154,8 @@ class Plugin {
 	 */
 	static function enqueue_scripts( $form, $ajax ) {
 		foreach ( $form['fields'] as $field ) {
-			if ( $field->type === 'places-api' ) {
-				wp_enqueue_script( 'google-places', 'https://maps.googleapis.com/maps/api/js?sensor=false&amp;libraries=places', [ 'jquery' ] );
+			if ( self::field_is_places( $field ) ) {
+				wp_enqueue_script( 'google-places', 'https://maps.googleapis.com/maps/api/js?libraries=places', [ 'jquery' ] );
 				wp_enqueue_script( 'jquery-geocomplete', PLUGINS_URL . '/assets/jquery.geocomplete.min.js', [ 'jquery', 'google-places' ] );
 				wp_enqueue_script( 'gforms-google-places', PLUGINS_URL . '/assets/gforms-google-places.js', [ 'jquery', 'jquery-geocomplete' ] );
 				break;
@@ -147,8 +168,8 @@ class Plugin {
 	 * @filter gform_field_content
 	 */
 	static function modify_fields( $content, $field, $value, $lead_id, $form_id ) {
-		if ( !empty( $field->geoField ) ) {
-			$content = str_replace( 'type=', 'data-geo="' . esc_attr( $field->geoField ) . '" type=', $content );
+		if ( !empty( $field->geoField ) && !empty( $field->geoFieldId ) ) {
+			$content = str_replace( 'type=', 'data-geo-' . (int) $field->geoFieldId . '="' . esc_attr( $field->geoField ) . '" type=', $content );
 		}
 		return $content;
 	}

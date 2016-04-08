@@ -6,7 +6,7 @@ jQuery(function($) {
 			$el = $(this);
 			$el.geocomplete({
 				details: '#' + $el.closest('form').attr('id'),
-				detailsAttribute: 'data-geo',
+				detailsAttribute: 'data-geo-' + $el.data('field-id'),
 			});
 		});
 	}
