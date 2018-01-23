@@ -41,7 +41,7 @@ the result will contain the full version. To access the short version, append `_
 For example, to collect the short value of the state value for a U.S. address, the component would be
 `administrative_area_level_1_short`.
 
-Multple Google Places fields can be placed on a single form. When collecting additional address components,
+Multiple Google Places fields can be placed on a single form. When collecting additional address components,
 ensure you are entering the correct field ID that corresponds to the places field.
 
 ## Issues
